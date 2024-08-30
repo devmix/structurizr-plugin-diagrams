@@ -81,7 +81,7 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
     private String encodePlantUML(final DocumentationContent documentationContent) throws Exception {
         //TODO SG optimize document parser
         final var content = documentationContent.getContent();
-        if (!content.contains("```plantuml")) {
+        if (!content.contains("plantuml")) {
             return content;
         }
 
@@ -93,20 +93,33 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         for (var line : lines) {
             line = line.trim();
 
-            if (line.equals("```plantuml")) {
+            if (rawPlantUML == null && (line.equals("```plantuml") || (line.startsWith("[plantuml") && line.endsWith("]")))) {
                 rawPlantUML = new StringBuilder();
-            } else if (rawPlantUML != null && line.equals("```")) {
-                final var strPlantUML = rawPlantUML.toString();
+                continue;
+            }
 
-                if (imageAsUrl) {
-                    replaceByImageUrl(strPlantUML, format, buf);
-                } else {
-                    replaceByEmbeddedImage(strPlantUML, format, buf);
+            if (rawPlantUML != null) {
+                // block start
+                if (format == Format.AsciiDoc && rawPlantUML.length() == 0 && (line.equals("----") || line.equals("...."))) {
+                    continue;
                 }
-                buf.append(System.lineSeparator());
 
-                rawPlantUML = null;
-            } else if (rawPlantUML != null) {
+                if (line.equals("```") || line.equals("----") || line.equals("....")) {
+                    final var strPlantUML = rawPlantUML.toString();
+
+                    if (imageAsUrl) {
+                        replaceByImageUrl(strPlantUML, format, buf);
+                    } else {
+                        replaceByEmbeddedImage(strPlantUML, format, buf);
+                    }
+                    buf.append(System.lineSeparator());
+
+                    rawPlantUML = null;
+                    continue;
+                }
+            }
+
+            if (rawPlantUML != null) {
                 rawPlantUML.append(line);
                 rawPlantUML.append(System.lineSeparator());
             } else {
