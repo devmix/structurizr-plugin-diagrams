@@ -8,10 +8,9 @@ Artifact can be downloaded
 from [Maven Central](https://central.sonatype.com/artifact/com.github.devmix.process.acto/devmix-process-acto-core).
 
 ```xml
-
 <dependency>
-    <groupId>com.github.devmix.process.acto</groupId>
-    <artifactId>devmix-process-acto-core</artifactId>
+    <groupId>com.github.devmix.structurizr.plugin</groupId>
+    <artifactId>structurizr-plugin-diagrams</artifactId>
     <version>0.1.0</version>
 </dependency>
 ```
@@ -40,9 +39,9 @@ from examples.
 
 **Additional functionality**:
 
-- Render PlantUML diagrams without PlantUML Server.
-- Allowed to use embedded images instead URL's (`data:image/*;base64``).
-- Images cache for rendering witout PlantUML Server.
+- Rendering PlantUML diagrams without PlantUML server.
+- It is allowed to use embedded images instead of URLs. (`data:image/*;base64`).
+- Image cache for rendering without PlantUML Server.
 
 Default values for plugin properties:
 
