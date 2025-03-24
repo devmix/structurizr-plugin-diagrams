@@ -22,19 +22,56 @@ import net.sourceforge.plantuml.SourceStringReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Plugin for rendering PlantUML diagrams in Structurizr documentation.
+ */
 public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
 
     private static final Logger LOG = LoggerFactory.getLogger(DiagramsPlantUMLPlugin.class);
 
+    /**
+     * Hexadecimal characters used for encoding the hash value of PlantUML content.
+     */
     private static final char[] CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    private static final String PLANTUML_FORMAT = "svg";
-    private static final String IMAGE_FORMAT = "svg+xml";
-    public static final String CACHE_DIR = ".cache/plantuml";
 
+    /**
+     * Format of the PlantUML diagrams.
+     */
+    private static final String PLANTUML_FORMAT = "svg";
+
+    /**
+     * MIME type for SVG images.
+     */
+    private static final String IMAGE_FORMAT = "svg+xml";
+
+    /**
+     * Directory to store cached PlantUML images.
+     */
+    private static final String CACHE_DIR = ".cache/plantuml";
+
+    /**
+     * Root directory of the DSL file.
+     */
     private Path rootDir;
+
+    /**
+     * Directory for caching rendered PlantUML diagrams.
+     */
     private Path imagesCacheDir;
+
+    /**
+     * Flag indicating whether to use URLs for images or embed them directly in the document.
+     */
     private boolean imageAsUrl;
+
+    /**
+     * Flag indicating whether to render PlantUML diagrams using a server or locally.
+     */
     private boolean renderPumlUsingServer;
+
+    /**
+     * URL of the PlantUML rendering server.
+     */
     private String renderPumlServerUrl;
 
     @Override
@@ -68,6 +105,12 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         }
     }
 
+    /**
+     * Replaces all PlantUML code blocks in the provided Documentable's documentation with the rendered images.
+     *
+     * @param documentable The Documentable whose documentation should be processed.
+     * @throws Exception If an error occurs during processing.
+     */
     private void encodePlantUML(final Documentable documentable) throws Exception {
         for (final var section : documentable.getDocumentation().getSections()) {
             section.setContent(encodePlantUML(section));
@@ -78,6 +121,13 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         }
     }
 
+    /**
+     * Replaces all PlantUML code blocks in the provided DocumentationContent with the rendered images.
+     *
+     * @param documentationContent The DocumentationContent to be processed.
+     * @return The updated content with embedded or URL-based images instead of PlantUML code blocks.
+     * @throws Exception If an error occurs during processing.
+     */
     private String encodePlantUML(final DocumentationContent documentationContent) throws Exception {
         //TODO SG optimize document parser
         final var content = documentationContent.getContent();
@@ -131,6 +181,14 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         return buf.toString();
     }
 
+    /**
+     * Replaces a PlantUML code block with an image URL.
+     *
+     * @param strPlantUML The content of the PlantUML diagram.
+     * @param format      The format of the document (e.g., AsciiDoc, Markdown).
+     * @param buf         Buffer to which the updated content should be appended.
+     * @throws Exception If an error occurs during processing.
+     */
     private void replaceByImageUrl(final String strPlantUML, final Format format, final StringBuilder buf) throws Exception {
         final var encoded = PlantUMLEncoder.encode(strPlantUML);
         if (format == Format.AsciiDoc) {
@@ -142,6 +200,14 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         }
     }
 
+    /**
+     * Replaces a PlantUML code block with an embedded image.
+     *
+     * @param strPlantUML The content of the PlantUML diagram.
+     * @param format      The format of the document (e.g., AsciiDoc, Markdown).
+     * @param buf         Buffer to which the updated content should be appended.
+     * @throws Exception If an error occurs during processing.
+     */
     private void replaceByEmbeddedImage(final String strPlantUML, final Format format, final StringBuilder buf) throws Exception {
         final byte[] image;
         final var filePath = toCacheFile(strPlantUML);
@@ -161,6 +227,13 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         }
     }
 
+    /**
+     * Renders a PlantUML diagram to an image.
+     *
+     * @param plantUML The content of the PlantUML diagram.
+     * @return Byte array containing the rendered image.
+     * @throws Exception If an error occurs during rendering.
+     */
     private byte[] renderDiagram(final String plantUML) throws Exception {
         if (renderPumlUsingServer) {
             final var encodedPUML = PlantUMLEncoder.encode(plantUML);
@@ -182,12 +255,25 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         }
     }
 
+    /**
+     * Generates a cache file path for the provided PlantUML content.
+     *
+     * @param plantUML The content of the PlantUML diagram.
+     * @return Path to the cached image file.
+     * @throws NoSuchAlgorithmException If MD5 algorithm is not available.
+     */
     private Path toCacheFile(final String plantUML) throws NoSuchAlgorithmException {
         final var hash = MessageDigest.getInstance("MD5");
         hash.update(plantUML.getBytes(StandardCharsets.UTF_8));
         return imagesCacheDir.resolve(encodeToString(hash.digest()) + "." + PLANTUML_FORMAT);
     }
 
+    /**
+     * Converts a byte array into a hexadecimal string.
+     *
+     * @param bytes Byte array to be converted.
+     * @return Hexadecimal representation of the provided bytes.
+     */
     private String encodeToString(final byte[] bytes) {
         final var sb = new StringBuilder();
         for (final var b : bytes) {
@@ -196,6 +282,12 @@ public class DiagramsPlantUMLPlugin implements StructurizrDslPlugin {
         return sb.toString();
     }
 
+    /**
+     * Converts an image into a data URI.
+     *
+     * @param image Byte array containing the image data.
+     * @return Data URI representing the provided image.
+     */
     private String toEmbedImage(final byte[] image) {
         if (image.length == 0) {
             return null;

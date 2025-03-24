@@ -11,6 +11,13 @@ import java.util.zip.DeflaterOutputStream;
  */
 class PlantUMLEncoder {
 
+    /**
+     * Encodes a PlantUML definition string into a compressed, URL-safe format.
+     *
+     * @param plantUMLDefinition The PlantUML source code to encode.
+     * @return A string containing the encoded, compressed PlantUML diagram data.
+     * @throws Exception If an error occurs during compression or encoding.
+     */
     public static String encode(String plantUMLDefinition) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION, true);
@@ -22,6 +29,12 @@ class PlantUMLEncoder {
         return encode(baos.toByteArray());
     }
 
+    /**
+     * Encodes a byte array into a PlantUML URL-safe format.
+     *
+     * @param bytes The byte array to encode.
+     * @return A string containing the encoded, compressed PlantUML diagram data.
+     */
     private static String encode(byte[] bytes) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < bytes.length; i += 3) {
@@ -35,6 +48,12 @@ class PlantUMLEncoder {
         return buf.toString();
     }
 
+    /**
+     * Encodes a single byte into a base64-like character.
+     *
+     * @param b The byte to encode.
+     * @return A character representing the encoded byte.
+     */
     private static char encode6bit(byte b) {
         if (b < 10) {
             return (char) ('0' + b);
@@ -58,6 +77,14 @@ class PlantUMLEncoder {
         return '?';
     }
 
+    /**
+     * Appends three bytes to a StringBuilder after encoding them into four base64-like characters.
+     *
+     * @param buf The StringBuilder to append the encoded characters to.
+     * @param b1  The first byte to encode.
+     * @param b2  The second byte to encode.
+     * @param b3  The third byte to encode.
+     */
     private static void append3bytes(StringBuilder buf, int b1, int b2, int b3) {
         int c1 = b1 >> 2;
         int c2 = (b1 & 0x3) << 4 | b2 >> 4;
